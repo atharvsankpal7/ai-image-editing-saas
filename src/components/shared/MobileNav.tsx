@@ -1,19 +1,16 @@
 "use client";
 import React from "react";
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
 import Image from "next/image";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { navLinks } from "@/constants";
 import { usePathname } from "next/navigation";
 import { Button } from "../ui/button";
+/**
+ * Renders a mobile navigation component with signed in/out state,
+ * user menu, and responsive sidebar navigation.
+ */
 const MobileNav = () => {
     const pathname = usePathname();
     return (

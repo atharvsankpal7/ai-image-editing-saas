@@ -6,6 +6,17 @@ import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { navLinks } from "../../constants";
 import { usePathname } from "next/navigation";
 import { Button } from "../ui/button";
+/**
+ * Sidebar component that renders sidebar navigation.
+ *
+ * For signed in users, renders first 6 nav links,
+ * then remaining nav links, and user button.
+ *
+ * For signed out users, renders login button.
+ *
+ * Checks if link is active based on pathname,
+ * and applies active styles.
+ */
 const Sidebar = () => {
     const pathname = usePathname();
     return (
