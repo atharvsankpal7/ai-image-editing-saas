@@ -22,7 +22,7 @@ export async function createUser(user: CreateUserParams) {
     } catch (error) {
         handleError(error);
     }
-}
+}  
 
 // READ
 /**
