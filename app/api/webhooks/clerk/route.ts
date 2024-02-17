@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
         // If there are no headers, error out
         if (!svix_id || !svix_timestamp || !svix_signature) {
-            return new Response("Error occured -- no svix headers", {
+            return new Response("Error occurred -- no svix headers", {
                 status: 400,
             });
         }
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
             }) as WebhookEvent;
         } catch (err) {
             console.error("Error verifying webhook:", err);
-            return new Response("Error occured", {
+            return new Response("Error occurred", {
                 status: 400,
             });
         }
@@ -139,11 +139,13 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "OK", user: deletedUser });
         }
 
-        console.log(`Webhook with and ID of ${id} and type of ${eventType}`);
+        console.log(`Webhook with an ID of ${id} and type of ${eventType}`);
         console.log("Webhook body:", body);
 
-        return new Response("", { status: 200 });
+        // No matching event type found, return a default response
+        return new Response("Unhandled webhook event type", { status: 400 });
     } catch (error) {
         console.log("Error in webhook:", error);
+        return new Response("Internal server error", { status: 500 });
     }
 }
