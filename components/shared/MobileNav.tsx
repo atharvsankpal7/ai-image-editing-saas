@@ -1,10 +1,10 @@
 "use client";
 import React from "react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "../../components/ui/sheet";
 import Link from "next/link";
 import Image from "next/image";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { navLinks } from "@/constants";
+import { navLinks } from "../../constants/index";
 import { usePathname } from "next/navigation";
 import { Button } from "../ui/button";
 /**
