@@ -23,7 +23,7 @@ if (!cached) {
  * Caches the database connection to avoid creating new connections.
  * Returns the cached connection or creates a new one if it doesn't exist.
  */
-const connectToMongoDB = async () => {
+export const connectToMongoDB = async () => {
     // if the connection is cached, return it
     if (cached.conn) {
         return cached.conn;
@@ -46,4 +46,3 @@ const connectToMongoDB = async () => {
     return cached.conn;
 };
 
-export default connectToMongoDB();
