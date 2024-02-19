@@ -22,7 +22,7 @@ export async function createUser(user: CreateUserParams) {
     } catch (error) {
         handleError(error);
     }
-}  
+}
 
 // READ
 /**
@@ -104,7 +104,7 @@ export async function deleteUser(clerkId: string) {
  * Updates the credit balance for a user by the provided credit fee amount.
  *
  * @param userId - The ID of the user to update credits for.
- * @param creditFee - The number of credits to increment the user's balance by.
+ * @param creditFee - The number of credits to decrement the user's balance by.
  * @returns The updated user object with the new credit balance.
  */
 export async function updateCredits(userId: string, creditFee: number) {
@@ -113,7 +113,7 @@ export async function updateCredits(userId: string, creditFee: number) {
 
         const updatedUserCredits = await User.findOneAndUpdate(
             { _id: userId },
-            { $inc: { creditBalance: creditFee } },
+            { $inc: { creditBalance: creditFee } }, // deducting the credit fee from the user's balance
             { new: true }
         );
 
