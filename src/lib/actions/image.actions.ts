@@ -7,6 +7,9 @@ import User from "../database/models/user.model";
 import Image from "../database/models/image.model";
 import { redirect } from "next/navigation";
 
+import { v2 as cloudinary } from "cloudinary";
+import { AddImageParams, GetAllImagesParams, UpdateImageParams } from "@/types";
+import { getUserById } from "./user.actions";
 
 /**
  * Populates the author field of the query with the
@@ -16,8 +19,8 @@ import { redirect } from "next/navigation";
 const populateUser = async (query: any) =>
     query.populate({
         path: "author",
-        model: "User",
-        select: "_id firstName lastName ",
+        model: User,
+        select: "_id firstName lastName clerkId",
     });
 
 // ADD IMAGE
@@ -129,6 +132,81 @@ export async function getImageById(imageId: string) {
         }
 
         return JSON.parse(JSON.stringify(image));
+    } catch (e) {
+        handleError(e);
+    }
+}
+
+// GET ALL IMAGES
+/**
+ * Retrieves a list of images based on specified parameters.
+ *
+ * @param limit - The maximum number of images to retrieve.
+ * @param page - The page number of the images to retrieve.
+ * @param searchQuery - The search query to filter images.
+ *
+ * @returns An object containing the retrieved images, total pages, and saved images count.
+ */
+export async function getAllImages({
+    limit = 9,
+    page = 1,
+    searchQuery = "",
+    userId,
+}: GetAllImagesParams) {
+    try {
+        await connectToMongoDB();
+        let user_id = await getUserById(userId);
+        user_id = user_id._id;
+        cloudinary.config({
+            cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET,
+            secure: true,
+        });
+
+        let expression = "folder=imaginify";
+
+        if (searchQuery) {
+            expression += ` AND ${searchQuery}`;
+        }
+        const { resources } = await cloudinary.search
+            .expression(expression)
+            .execute();
+
+        const resourceIds = resources.map(
+            (resource: any) => resource.public_id
+        );
+
+        let query = {};
+
+        if (searchQuery) {
+            query = {
+                publicId: {
+                    $in: resourceIds, // $in operator to search for element with the publicId is in the array
+                },
+            };
+        }
+
+        const skipAmount = (Number(page) - 1) * limit;
+
+        const images = await populateUser(
+            Image.find({ author: user_id })
+                .find(query)
+                .sort({
+                    updateAt: -1,
+                }) // sort by date, descending
+                .skip(skipAmount) // skip the first `skipAmount` number of images
+                .limit(limit) // limit the number of images to `limit`
+        );
+
+        const totalImages = await Image.find(query).countDocuments();
+        const savedImages = await Image.find().countDocuments();
+
+        return {
+            data: JSON.parse(JSON.stringify(images)),
+            totalPages: Math.ceil(totalImages / limit),
+            savedImages,
+        };
     } catch (e) {
         handleError(e);
     }
