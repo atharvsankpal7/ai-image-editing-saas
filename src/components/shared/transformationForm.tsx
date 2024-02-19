@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useTransition } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -200,10 +200,18 @@ const TransformationForm = ({
         });
     };
 
+    useEffect(() => {
+        if (image && (type === "restore" || type === "removeBackground")) {
+            setTransformationConfig(transformationType.config);
+        }
+    }, [image, transformationType.config, type]);
+
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                {creditBalance < Math.abs(creditFee) && <InsufficientCreditsModal/>}
+                {creditBalance < Math.abs(creditFee) && (
+                    <InsufficientCreditsModal />
+                )}
                 <CustomField
                     control={form.control}
                     name="title"
