@@ -1,5 +1,4 @@
 import Header from "@/components/shared/Header";
-import TransformationForm from "@/components/shared/TransformationForm";
 
 import { transformationTypes } from "@/constants";
 import { getUserById } from "@/lib/actions/user.actions";
@@ -7,6 +6,7 @@ import { SearchParamProps, TransformationTypeKey } from "@/types";
 import { auth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import React from "react";
+import TransformationForm from "@/components/shared/TransformationForm";
 
 const AddTransformationTypePage = async ({
     params: { type }, //params are provided in the url after the `/add/`
