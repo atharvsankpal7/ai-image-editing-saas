@@ -8,8 +8,7 @@ import Image from "../database/models/image.model";
 import { redirect } from "next/navigation";
 
 import { v2 as cloudinary } from "cloudinary";
-import { AddImageParams, GetAllImagesParams, UpdateImageParams } from "@/types";
-import { getUserById } from "./user.actions";
+import { AddImageParams, UpdateImageParams } from "@/types";
 
 /**
  * Populates the author field of the query with the
@@ -151,12 +150,14 @@ export async function getAllImages({
     limit = 9,
     page = 1,
     searchQuery = "",
-    userId,
-}: GetAllImagesParams) {
+}: {
+    limit?: number;
+    page: number;
+    searchQuery?: string;
+}) {
     try {
         await connectToMongoDB();
-        let user_id = await getUserById(userId);
-        user_id = user_id._id;
+
         cloudinary.config({
             cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
             api_key: process.env.CLOUDINARY_API_KEY,
@@ -169,6 +170,7 @@ export async function getAllImages({
         if (searchQuery) {
             expression += ` AND ${searchQuery}`;
         }
+
         const { resources } = await cloudinary.search
             .expression(expression)
             .execute();
@@ -182,7 +184,7 @@ export async function getAllImages({
         if (searchQuery) {
             query = {
                 publicId: {
-                    $in: resourceIds, // $in operator to search for element with the publicId is in the array
+                    $in: resourceIds,
                 },
             };
         }
@@ -190,13 +192,10 @@ export async function getAllImages({
         const skipAmount = (Number(page) - 1) * limit;
 
         const images = await populateUser(
-            Image.find({ author: user_id })
-                .find(query)
-                .sort({
-                    updateAt: -1,
-                }) // sort by date, descending
-                .skip(skipAmount) // skip the first `skipAmount` number of images
-                .limit(limit) // limit the number of images to `limit`
+            Image.find(query)
+                .sort({ updatedAt: -1 })
+                .skip(skipAmount)
+                .limit(limit)
         );
 
         const totalImages = await Image.find(query).countDocuments();
@@ -204,10 +203,52 @@ export async function getAllImages({
 
         return {
             data: JSON.parse(JSON.stringify(images)),
-            totalPages: Math.ceil(totalImages / limit),
+            totalPage: Math.ceil(totalImages / limit),
             savedImages,
         };
-    } catch (e) {
-        handleError(e);
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+/**
+ * Gets a paginated list of images uploaded by a user.
+ *
+ * @param limit - Number of images to return per page. Default is 9.
+ * @param page - Page number to retrieve.
+ * @param userId - ID of the user to get images for.
+ * @returns Object with image data and pagination info.
+ */
+export async function getUserImages({
+    limit = 9,
+    page = 1,
+    userId,
+}: {
+    limit?: number;
+    page: number;
+    userId: string;
+}) {
+    try {
+        await connectToMongoDB();
+
+        const skipAmount = (Number(page) - 1) * limit;
+
+        const images = await populateUser(
+            Image.find({ author: userId })
+                .sort({ updatedAt: -1 })
+                .skip(skipAmount)
+                .limit(limit)
+        );
+
+        const totalImages = await Image.find({
+            author: userId,
+        }).countDocuments();
+
+        return {
+            data: JSON.parse(JSON.stringify(images)),
+            totalPages: Math.ceil(totalImages / limit),
+        };
+    } catch (error) {
+        handleError(error);
     }
 }
