@@ -1,4 +1,3 @@
-
 import { navLinks } from "@/constants";
 import { getAllImages } from "@/lib/actions/image.actions";
 import { Collection } from "@/components/shared/Collection";
@@ -14,8 +13,7 @@ const Home = async ({ searchParams }: SearchParamProps) => {
     const searchQuery = (searchParams?.query as string) || "";
 
     const user = auth();
-
-    if (!user) {
+    if (!user.userId) {
         redirect("/sign-in");
     }
     const images = await getAllImages({
