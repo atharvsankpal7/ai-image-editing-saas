@@ -25,7 +25,6 @@ const Home = async ({ searchParams }: SearchParamProps) => {
         });
     } catch (error) {
         console.log(error);
-        redirect("/sign-in");
     }
     return (
         <div>
