@@ -1,31 +1,15 @@
 import { navLinks } from "@/constants";
-import { getAllImages } from "@/lib/actions/image.actions";
-import { Collection } from "@/components/shared/Collection";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { SignedIn, SignedOut, auth } from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { SearchParamProps } from "@/types";
-import { redirect } from "next/navigation";
+import CollectionUtils from "@/components/shared/CollectionUtils";
 const Home = async ({ searchParams }: SearchParamProps) => {
     const page = Number(searchParams?.page) || 1;
     const searchQuery = (searchParams?.query as string) || "";
-    let images;
-    try {
-        const user = auth();
 
-        if (!user.userId) {
-            throw new Error("User not found");
-        }
-        images = await getAllImages({
-            page,
-            searchQuery,
-            userId: user.userId,
-        });
-    } catch (error) {
-        console.log(error);
-    }
     return (
         <div>
             <section className="home">
@@ -57,12 +41,7 @@ const Home = async ({ searchParams }: SearchParamProps) => {
             </section>
             <SignedIn>
                 <section className="sm:mt-12">
-                    <Collection
-                        hasSearch={true}
-                        images={images?.data}
-                        totalPages={images?.totalPages}
-                        page={page}
-                    />
+                    <CollectionUtils searchQuery={searchQuery} page={page} />
                 </section>
             </SignedIn>
             <SignedOut>
