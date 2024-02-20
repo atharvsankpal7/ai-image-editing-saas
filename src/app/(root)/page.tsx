@@ -3,7 +3,7 @@ import { getAllImages } from "@/lib/actions/image.actions";
 import { Collection } from "@/components/shared/Collection";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect } from "react";
 import { SignedIn, SignedOut, auth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { SearchParamProps } from "@/types";
@@ -12,15 +12,23 @@ const Home = async ({ searchParams }: SearchParamProps) => {
     const page = Number(searchParams?.page) || 1;
     const searchQuery = (searchParams?.query as string) || "";
 
-    const user = auth();
-    if (!user.userId) {
+    let images;
+
+    try {
+        const user = auth();
+        if (!user.userId) {
+            redirect("/sign-in");
+        }
+        images = await getAllImages({
+            page,
+            searchQuery,
+            userId: user.userId,
+        });
+    } catch (e) {
         redirect("/sign-in");
+        console.log(e);
     }
-    const images = await getAllImages({
-        page,
-        searchQuery,
-        userId: user.userId,
-    });
+
     return (
         <div>
             <section className="home">
