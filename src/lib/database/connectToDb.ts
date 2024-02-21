@@ -42,7 +42,5 @@ export const connectToMongoDB = async () => {
 
     // once the connection is created after resolving of promise, cache it and return it
     cached.conn = await cached.promise;
-
     return cached.conn;
 };
-

@@ -58,18 +58,31 @@ export async function POST(req: Request) {
     const eventType = evt.type;
 
   // CREATE
-  if (eventType === "user.created") {
-    const { id, email_addresses, image_url, first_name, last_name, username } = evt.data;
-    const user = {
-      clerkId: id,
-      email: email_addresses[0].email_address,
-      username: username!,
-      firstName: first_name,
-      lastName: last_name,
-      photo: image_url,
-    };
+    /**
+     * Handle Clerk webhook for user creation event.
+     * Create user in app database from Clerk user data.
+     * Update Clerk user metadata with app user ID.
+     * Return user object in response.
+     */
+    if (eventType === "user.created") {
+        const {
+            id,
+            email_addresses,
+            image_url,
+            first_name,
+            last_name,
+            username,
+        } = evt.data;
+        const user = {
+            clerkId: id,
+            email: email_addresses[0].email_address,
+            username: username!,
+            firstName: first_name,
+            lastName: last_name,
+            photo: image_url,
+        };
 
-    const newUser = await createUser(user);
+        const newUser = await createUser(user);
 
         // Set public metadata
         if (newUser) {
@@ -84,6 +97,11 @@ export async function POST(req: Request) {
     }
 
     // UPDATE
+       /**
+     * Handle Clerk webhook for user update event.
+     * Update user in app database from Clerk user data.
+     * Return updated user object in response.
+     */
     if (eventType === "user.updated") {
         const { id, image_url, first_name, last_name, username } = evt.data;
 
@@ -100,6 +118,11 @@ export async function POST(req: Request) {
     }
 
     // DELETE
+      /**
+     * Handle Clerk webhook for user deletion event.
+     * Delete user from app database based on Clerk user ID.
+     * Return deleted user object in response.
+     */
     if (eventType === "user.deleted") {
         const { id } = evt.data;
 

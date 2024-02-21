@@ -70,114 +70,164 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
   })
  
   // 2. Define a submit handler.
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true);
+    /**
+     * Handles form submission.
+     *
+     * Sets isSubmitting to true, then checks if there is existing image data.
+     * If so, generates a transformation URL using the image data and form values.
+     *
+     * Creates an imageData object with the form values and image data.
+     *
+     * If adding a new image, calls addImage with the imageData.
+     * On success, resets form and updates component state.
+     *
+     * If updating an existing image, calls updateImage with imageData.
+     * On success, navigates to the updated image page.
+     *
+     * Handles any errors.
+     *
+     * Sets isSubmitting to false when done.
+     */
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        setIsSubmitting(true);
 
-    if(data || image) {
-      const transformationUrl = getCldImageUrl({
-        width: image?.width,
-        height: image?.height,
-        src: image?.publicId,
-        ...transformationConfig
-      })
+        if (data || image) {
+            const transformationUrl = getCldImageUrl({
+                width: image?.width,
+                height: image?.height,
+                src: image?.publicId,
+                ...transformationConfig,
+            });
 
-      const imageData = {
-        title: values.title,
-        publicId: image?.publicId,
-        transformationType: type,
-        width: image?.width,
-        height: image?.height,
-        config: transformationConfig,
-        secureURL: image?.secureURL,
-        transformationURL: transformationUrl,
-        aspectRatio: values.aspectRatio,
-        prompt: values.prompt,
-        color: values.color,
-      }
+            const imageData = {
+                title: values.title,
+                publicId: image?.publicId,
+                transformationType: type,
+                width: image?.width,
+                height: image?.height,
+                config: transformationConfig,
+                secureURL: image?.secureURL,
+                transformationURL: transformationUrl,
+                aspectRatio: values.aspectRatio,
+                prompt: values.prompt,
+                color: values.color,
+            };
 
-      if(action === 'Add') {
-        try {
-          const newImage = await addImage({
-            image: imageData,
-            userId,
-            path: '/'
-          })
+            if (action === "Add") {
+                try {
+                    const newImage = await addImage({
+                        image: imageData,
+                        userId,
+                        path: "/",
+                    });
 
-          if(newImage) {
-            form.reset()
-            setImage(data)
-            router.push(`/transformations/${newImage._id}`)
-          }
-        } catch (error) {
-          console.log(error);
+                    if (newImage) {
+                        form.reset();
+                        setImage(data);
+                        router.push(`/transformations/${newImage._id}`);
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+
+            if (action === "Update") {
+                try {
+                    const updatedImage = await updateImage({
+                        image: {
+                            ...imageData,
+                            _id: data._id,
+                        },
+                        userId,
+                        path: `/transformations/${data._id}`,
+                    });
+
+                    if (updatedImage) {
+                        router.push(`/transformations/${updatedImage._id}`);
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
+            }
         }
-      }
 
-      if(action === 'Update') {
-        try {
-          const updatedImage = await updateImage({
-            image: {
-              ...imageData,
-              _id: data._id
-            },
-            userId,
-            path: `/transformations/${data._id}`
-          })
-
-          if(updatedImage) {
-            router.push(`/transformations/${updatedImage._id}`)
-          }
-        } catch (error) {
-          console.log(error);
-        }
-      }
+        setIsSubmitting(false);
     }
 
-    setIsSubmitting(false)
-  }
+    /**
+     * Handles selecting a value from the aspect ratio dropdown.
+     * Updates the image state with the new aspect ratio, width and height.
+     * Sets the transformation type to the new config.
+     * Calls the onChangeField callback with the selected value.
+     */
+    const onSelectFieldHandler = (
+        value: string,
+        onChangeField: (value: string) => void
+    ) => {
+        const imageSize = aspectRatioOptions[value as AspectRatioKey];
 
-  const onSelectFieldHandler = (value: string, onChangeField: (value: string) => void) => {
-    const imageSize = aspectRatioOptions[value as AspectRatioKey]
+        setImage((prevState: any) => ({
+            ...prevState,
+            aspectRatio: imageSize.aspectRatio,
+            width: imageSize.width,
+            height: imageSize.height,
+        }));
 
-    setImage((prevState: any) => ({
-      ...prevState,
-      aspectRatio: imageSize.aspectRatio,
-      width: imageSize.width,
-      height: imageSize.height,
-    }))
+        setNewTransformation(transformationType.config);
 
-    setNewTransformation(transformationType.config);
+        return onChangeField(value);
+    };
 
-    return onChangeField(value)
-  }
+    /**
+     * Handles input change events for the transformation form fields.
+     * Debounces updating the transformation state.
+     * Calls the onChangeField callback with the new value.
+     *
+     * @param fieldName - The name of the field that was changed
+     * @param value - The new value of the field
+     * @param type - The transformation type
+     * @param onChangeField - The callback to call with the new value
+     */
+    const onInputChangeHandler = (
+        fieldName: string,
+        value: string,
+        type: string,
+        onChangeField: (value: string) => void
+    ) => {
+        debounce(() => {
+            setNewTransformation((prevState: any) => ({
+                ...prevState,
+                [type]: {
+                    ...prevState?.[type],
+                    [fieldName === "prompt" ? "prompt" : "to"]: value,
+                },
+            }));
+        }, 1000)();
 
-  const onInputChangeHandler = (fieldName: string, value: string, type: string, onChangeField: (value: string) => void) => {
-    debounce(() => {
-      setNewTransformation((prevState: any) => ({
-        ...prevState,
-        [type]: {
-          ...prevState?.[type],
-          [fieldName === 'prompt' ? 'prompt' : 'to' ]: value 
-        }
-      }))
-    }, 1000)();
-      
-    return onChangeField(value)
-  }
+        return onChangeField(value);
+    };
 
-  const onTransformHandler = async () => {
-    setIsTransforming(true)
+    /**
+     * Handles when the user clicks the transform button.
+     * Sets the isTransforming state to true to show a loading indicator.
+     * Merges the newTransformation state into the existing transformationConfig.
+     * Clears the newTransformation state.
+     * Starts the transform transition.
+     * Calls updateCredits to deduct credits for the transform.
+     */
+    const onTransformHandler = async () => {
+        setIsTransforming(true);
 
-    setTransformationConfig(
-      deepMergeObjects(newTransformation, transformationConfig)
-    )
+        setTransformationConfig(
+            deepMergeObjects(newTransformation, transformationConfig)
+        );
 
-    setNewTransformation(null)
+        setNewTransformation(null);
 
-    startTransition(async () => {
-      await updateCredits(userId, creditFee)
-    })
-  }
+        startTransition(async () => {
+            await updateCredits(userId, creditFee);
+        });
+    };
 
   useEffect(() => {
     if(image && (type === 'restore' || type === 'removeBackground')) {
@@ -185,7 +235,23 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
     }
   }, [image, transformationType.config, type])
 
-  return (
+    /**
+   * Renders a form for applying image transformations.
+   * 
+   * The form contains fields for:
+   * - Image title 
+   * - Aspect ratio (for 'fill' type)
+   * - Object to remove/recolor prompt (for 'remove' and 'recolor' types) 
+   * - Replacement color (for 'recolor' type)
+   * - Image uploader
+   * - Transformed image preview
+   * - Transform and Save buttons
+   * 
+   * Handles input changes to update newTransformation state. 
+   * On transform, applies newTransformation and transitions the image.
+   * On submit, saves the transformed image.
+   */
+return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         {creditBalance < Math.abs(creditFee) && <InsufficientCreditsModal />}

@@ -14,6 +14,21 @@ type MediaUploaderProps = {
     type: string;
 };
 
+/**
+ * MediaUploader component allows uploading an image to Cloudinary
+ * and returns the publicId, width, height of uploaded image.
+ *
+ * It shows a preview of uploaded image or upload button.
+ * Handles upload success/error with toasts.
+ * Opens CldUploadWidget on click of upload button.
+ *
+ * Props:
+ * - onValueChange: callback when image is uploaded successfully
+ * - setImage: callback to set image details in state
+ * - image: current image object in state
+ * - publicId: publicId of uploaded image
+ * - type: type of image e.g. "avatar"
+ */
 const MediaUploader = ({
     onValueChange,
     setImage,

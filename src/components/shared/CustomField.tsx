@@ -21,6 +21,12 @@ type CustomFieldProps = {
     className?: string;
 };
 
+/**
+ * CustomField component renders a form field with label, control and message.
+ * It takes in control, render function, name, label and className props.
+ * Renders FormField with provided control, name, and render function.
+ * Render function returns FormItem with label, control and message.
+ */
 export const CustomField = ({
     control,
     render,

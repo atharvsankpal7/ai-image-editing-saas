@@ -6,6 +6,12 @@ import { PlaceholderValue } from "next/dist/shared/lib/get-img-props";
 import { CldImage, getCldImageUrl } from "next-cloudinary";
 import { TransformedImageProps } from "@/types";
 
+/**
+ * Renders an image that applies transformations from Cloudinary.
+ * Allows downloading the transformed image.
+ * Shows a loading state while image is transforming.
+ * Falls back to placeholder if image fails to load.
+ */
 const TransformedImage = ({
     image,
     type,
