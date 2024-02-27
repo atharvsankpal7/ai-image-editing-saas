@@ -1,22 +1,15 @@
-import { Collection } from "@/components/shared/Collection"
-import { navLinks } from "@/constants"
-import { getAllImages } from "@/lib/actions/image.actions"
-import { SearchParamProps } from "@/types"
-import Image from "next/image"
-import Link from "next/link"
+import { navLinks } from "@/constants";
+import Image from "next/image";
+import Link from "next/link";
+
 
 /**
- * Home page component.
+ * Renders the home page hero section and navigation links.
  *
- * Fetches images from API based on page number and search query.
- * Renders hero section and image collection of all users in a grid.
+ * Fetches a subset of the navLinks array to render as icons and labels.
+ * Uses next/Link to handle client-side routing to the link routes on click.
  */
-const Home = async ({ searchParams }: SearchParamProps) => {
-    const page = Number(searchParams?.page) || 1;
-    const searchQuery = (searchParams?.query as string) || "";
-
-    const images = await getAllImages({ page, searchQuery });
-
+const Home = async () => {
     return (
         <>
             <section className="home">
@@ -45,17 +38,8 @@ const Home = async ({ searchParams }: SearchParamProps) => {
                     ))}
                 </ul>
             </section>
-
-            <section className="sm:mt-12">
-                <Collection
-                    hasSearch={true}
-                    images={images?.data}
-                    totalPages={images?.totalPage}
-                    page={page}
-                />
-            </section>
         </>
     );
 };
 
-export default Home
+export default Home;
