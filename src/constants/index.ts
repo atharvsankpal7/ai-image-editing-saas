@@ -75,7 +75,7 @@ export const navLinks = [
       credits: 15,
       inclusions: [
         {
-          label: "120 Credits",
+          label: "15 Credits",
           isIncluded: true,
         },
         {
@@ -126,13 +126,6 @@ export const navLinks = [
       subTitle: "Refine images by removing noise and imperfections",
       config: { restore: true },
       icon: "image.svg",
-    },
-    removeBackground: {
-      type: "removeBackground",
-      title: "Background Remove",
-      subTitle: "Removes the background of the image using AI",
-      config: { removeBackground: true },
-      icon: "camera.svg",
     },
     fill: {
       type: "fill",
